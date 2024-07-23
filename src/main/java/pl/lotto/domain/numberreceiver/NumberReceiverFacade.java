@@ -1,5 +1,7 @@
 package pl.lotto.domain.numberreceiver;
 
+import java.util.Set;
+
 /**
  * Klient podaje 6 liczb
  * liczby muszą być w zakresie 1-99
@@ -9,5 +11,9 @@ package pl.lotto.domain.numberreceiver;
  **/
 
 public class NumberReceiverFacade {
-    
+
+    public String inputNumbers(Set<Integer> numbersFromUser) {
+        return "success";
+    }
+
 }
