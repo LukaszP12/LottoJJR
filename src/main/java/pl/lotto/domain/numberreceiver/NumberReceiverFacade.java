@@ -1,5 +1,8 @@
 package pl.lotto.domain.numberreceiver;
 
+import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import java.util.List;
 import java.util.Set;
 
@@ -11,20 +14,18 @@ import java.util.Set;
  * klient dostaje informacje o swoim unikalnym identyfikatorze losowania
  **/
 
+@AllArgsConstructor
 public class NumberReceiverFacade {
 
+    @Autowired
+    private final NumberValidator validator;
+
     public String inputNumbers(Set<Integer> numbersFromUser) {
-        boolean areAllNumbersInRange = areAllNumbersInRange(numbersFromUser);
+        boolean areAllNumbersInRange = validator.areAllNumbersInRange(numbersFromUser);
         if (areAllNumbersInRange) {
             return "success";
         }
         return "failed";
     }
 
-    private boolean areAllNumbersInRange(Set<Integer> numbersFromUser) {
-        return numbersFromUser.stream()
-                .filter(number -> number >= 1)
-                .filter(number -> number <= 99)
-                .count() == 6;
-    }
 }
