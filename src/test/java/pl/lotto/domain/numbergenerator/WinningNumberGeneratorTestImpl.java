@@ -1,7 +1,5 @@
 package pl.lotto.domain.numbergenerator;
 
-import org.springframework.stereotype.Component;
-
 import java.util.Set;
 
 public class WinningNumberGeneratorTestImpl implements RandomNumberGenerable {
