@@ -14,6 +14,11 @@ public class AdjustableClock extends Clock {
     private final ZoneId zone;
     protected Instant instant;
 
+    public AdjustableClock() {
+        this.instant = Instant.now();
+        this.zone = ZoneId.systemDefault();
+    }
+
     public AdjustableClock(Instant initialInstant, ZoneId zone) {
         this.instant = initialInstant;
         this.zone = zone;
