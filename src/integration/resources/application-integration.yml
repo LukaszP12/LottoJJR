@@ -1,0 +1,9 @@
+spring:
+  main:
+    allow-bean-definition-overriding: true
+
+lotto:
+  number-generator:
+    lotteryRunOccurrence: "*/5 * * * * *"
+  result-checker:
+    lotteryRunOccurrence: "*/7 * * * * *"
