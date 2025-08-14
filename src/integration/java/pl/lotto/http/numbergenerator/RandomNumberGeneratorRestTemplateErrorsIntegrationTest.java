@@ -67,7 +67,7 @@ public class RandomNumberGeneratorRestTemplateErrorsIntegrationTest {
     }
 
     @Test
-    void should_return_null_numbers_when_fault_empty_response() {
+    void should_throw_exception_500_when_fault_empty_response() {
         // given
         wireMockServer.stubFor(WireMock.get("/api/v1.0/random?min=1&max=99&count=25")
                 .willReturn(WireMock.aResponse()
@@ -76,10 +76,27 @@ public class RandomNumberGeneratorRestTemplateErrorsIntegrationTest {
                         .withFault(Fault.EMPTY_RESPONSE)));
 
         // when
-        SixRandomNumbersDto response = randomNumberGenerable.generateSixRandomNumbers(25, 1, 99);
+        Throwable throwable = catchThrowable(() -> randomNumberGenerable.generateSixRandomNumbers(25, 1, 99));
 
         // then
-        assertThat(response).isEqualTo(new SixRandomNumbersDto(null));
+        assertThat(throwable).isInstanceOf(ResponseStatusException.class);
+        assertThat(throwable.getMessage()).isEqualTo("500 INTERNAL_SERVER_ERROR");
+    }
+
+    @Test
+    void should_throw_exception_500_when_fault_malformed_response_chunk() {
+        // given
+        wireMockServer.stubFor(WireMock.get("/api/v1.0/random?min=1&max=99&count=25")
+                .willReturn(WireMock.aResponse()
+                        .withStatus(HttpStatus.OK.value())
+                        .withHeader(CONTENT_TYPE_HEADER_KEY, APPLICATION_JSON_CONTENT_TYPE_VALUE)
+                        .withFault(Fault.MALFORMED_RESPONSE_CHUNK)));
+        // when
+        Throwable throwable = catchThrowable(() -> randomNumberGenerable.generateSixRandomNumbers(25, 1, 99));
+
+        // then
+        assertThat(throwable).isInstanceOf(ResponseStatusException.class);
+        assertThat(throwable.getMessage()).isEqualTo("500 INTERNAL_SERVER_ERROR");
     }
 
     @Test
@@ -87,11 +104,11 @@ public class RandomNumberGeneratorRestTemplateErrorsIntegrationTest {
         // given
         wireMockServer.stubFor(WireMock.get("/api/v1.0/random?min=1&max=99&count=25")
                 .willReturn(WireMock.aResponse()
-                        .withStatus(HttpStatus.OK.value())
+                        .withStatus(HttpStatus.NO_CONTENT.value())
                         .withHeader(CONTENT_TYPE_HEADER_KEY, APPLICATION_JSON_CONTENT_TYPE_VALUE)
                         .withBody("""
                                 [1, 2, 3, 4, 5, 6, 82, 82, 83, 83, 86, 57, 10, 81, 53, 93, 50, 54, 31, 88, 15, 43, 79, 32, 43]
-                                """.trim()
+                                          """.trim()
                         )));
 
         // when
@@ -141,11 +158,6 @@ public class RandomNumberGeneratorRestTemplateErrorsIntegrationTest {
         // then
         assertThat(throwable).isInstanceOf(ResponseStatusException.class);
         assertThat(throwable.getMessage()).isEqualTo("500 INTERNAL_SERVER_ERROR");
-    }
-
-    @Test
-    void should_return_null_numbers_when_fault_malformed_response_chunk() {
-
     }
 
     @Test
