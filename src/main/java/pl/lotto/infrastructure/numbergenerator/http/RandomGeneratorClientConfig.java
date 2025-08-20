@@ -22,6 +22,7 @@ public class RandomGeneratorClientConfig {
             @Value("${lotto.number-generator.http.client.config.connectionTimeout:1000}") long connectionTimeout,
             @Value("${lotto.number-generator.http.client.config.readTimeout:1000}") long readTimeout,
             RestTemplateResponseErrorHandler restTemplateResponseErrorHandler) {
+
         return new RestTemplateBuilder()
                 .errorHandler(restTemplateResponseErrorHandler)
                 .setConnectTimeout(Duration.ofMillis(connectionTimeout))
@@ -30,9 +31,9 @@ public class RandomGeneratorClientConfig {
     }
 
     @Bean
-    public RandomNumberGenerable remoteNumberGeneratorClient(RestTemplate restTemplate,
-                                                             @Value("${lotto.number-generator.http.client.config.uri}") String uri,
-                                                             @Value("${lotto.number-generator.http.client.config.port}") int port) {
-        return new RandomNumberGeneratorRestTemplate(restTemplate, uri, port);
+    public RandomNumberGenerable remoteNumberGeneratorClient(
+            RestTemplateBuilder restTemplateBuilder,
+            RandomNumberGeneratorRestTemplateConfigurationProperties properties) {
+        return new RandomNumberGeneratorRestTemplate(restTemplateBuilder.build(), properties.uri());
     }
 }

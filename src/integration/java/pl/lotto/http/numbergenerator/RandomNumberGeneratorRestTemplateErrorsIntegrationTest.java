@@ -5,8 +5,14 @@ import com.github.tomakehurst.wiremock.http.Fault;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.web.server.ResponseStatusException;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import pl.lotto.domain.numbergenerator.RandomNumberGenerable;
 import pl.lotto.domain.numbergenerator.SixRandomNumbersDto;
 
@@ -16,6 +22,9 @@ import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMoc
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 
+@SpringBootTest
+@AutoConfigureMockMvc
+@Testcontainers
 public class RandomNumberGeneratorRestTemplateErrorsIntegrationTest {
 
     public static final String CONTENT_TYPE_HEADER_KEY = "Content-Type";
@@ -26,10 +35,17 @@ public class RandomNumberGeneratorRestTemplateErrorsIntegrationTest {
             .options(wireMockConfig().dynamicPort())
             .build();
 
-    RandomNumberGenerable randomNumberGenerable = new RandomGeneratorRestTemplateTestConfig().remoteNumberGeneratorClient(
-            wireMockServer.getPort(),
-            1000,
-            1000);
+    @Autowired
+    private RandomNumberGenerable randomNumberGenerable;
+
+    @DynamicPropertySource
+    static void properties(DynamicPropertyRegistry registry) {
+        // wireMockServer.getPort() is available here after initialization
+        registry.add("lotto.number-generator.http.client.config.uri",
+                () -> "http://localhost:" + wireMockServer.getPort());
+        registry.add("lotto.number-generator.http.client.config.connection-timeout", () -> 1000);
+        registry.add("lotto.number-generator.http.client.config.read-timeout", () -> 1000);
+    }
 
     @Test
     void should_return_200_ok_and_six_numbers() {
