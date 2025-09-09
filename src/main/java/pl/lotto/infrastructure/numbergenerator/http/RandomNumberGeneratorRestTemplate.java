@@ -1,5 +1,6 @@
 package pl.lotto.infrastructure.numbergenerator.http;
 
+import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Primary;
@@ -24,20 +25,25 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Log4j2
+@AllArgsConstructor
 @Primary
 @Component
 public class RandomNumberGeneratorRestTemplate implements RandomNumberGenerable {
 
     public static final int MAXIMAL_WINNING_NUMBERS = 6;
+    public static final String RANDOM_NUMBER_SERVICE_PATH = "/api/v1.0/random";
 
     private final RestTemplate restTemplate;
-    private final String baseUrl; // full URI from properties
+    private final String uri;
+    private final int port;
 
-    public RandomNumberGeneratorRestTemplate(RestTemplate restTemplate,
-                                             @Value("${lotto.number-generator.http.client.config.uri}") String baseUrl) {
-        this.restTemplate = restTemplate;
-        this.baseUrl = baseUrl;
-    }
+//    private final String baseUrl; // full URI from properties
+//
+//    public RandomNumberGeneratorRestTemplate(RestTemplate restTemplate,
+//                                             @Value("${lotto.number-generator.http.client.config.uri}") String baseUrl) {
+//        this.restTemplate = restTemplate;
+//        this.baseUrl = baseUrl;
+//    }
 
     @Override
     public SixRandomNumbersDto generateSixRandomNumbers(int count, int lowerBand, int upperBand) {
@@ -58,7 +64,6 @@ public class RandomNumberGeneratorRestTemplate implements RandomNumberGenerable 
             return SixRandomNumbersDto.builder()
                     .numbers(sixDistinctNumbers)
                     .build();
-
         } catch (ResourceAccessException e) {
             log.error("Error while fetching winning numbers using http client: " + e.getMessage());
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -68,7 +73,7 @@ public class RandomNumberGeneratorRestTemplate implements RandomNumberGenerable 
     private ResponseEntity<List<Integer>> makeGetRequest(int count, int lowerBand, int upperBand, HttpEntity<HttpHeaders> requestEntity) {
         try {
             ResponseEntity<List<Integer>> response = restTemplate.exchange(
-                    baseUrl + "/api/v1.0/random?min=" + lowerBand + "&max=" + upperBand + "&count=" + count,
+                    uri + "" + port + "/api/v1.0/random?min=" + lowerBand + "&max=" + upperBand + "&count=" + count,
                     HttpMethod.GET,
                     requestEntity,
                     new ParameterizedTypeReference<List<Integer>>() {}
