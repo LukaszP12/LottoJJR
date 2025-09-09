@@ -109,4 +109,8 @@ public class AdjustableClock extends Clock {
         Duration offset = Duration.ofMinutes(minutes);
         advanceInTimeBy(offset);
     }
+
+    public LocalDateTime now() {
+        return LocalDateTime.ofInstant(this.instant(), this.getZone());
+    }
 }
