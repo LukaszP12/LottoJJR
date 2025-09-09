@@ -36,7 +36,11 @@ public class RandomNumberGeneratorRestTemplateErrorsIntegrationTest {
             .build();
 
     @Autowired
-    private RandomNumberGenerable randomNumberGenerable;
+    private RandomNumberGenerable randomNumberGenerable = new RandomGeneratorRestTemplateTestConfig().remoteNumberGeneratorClient(
+            wireMockServer.getPort(),
+            1000,
+            1000
+    );
 
     @DynamicPropertySource
     static void properties(DynamicPropertyRegistry registry) {
@@ -124,7 +128,7 @@ public class RandomNumberGeneratorRestTemplateErrorsIntegrationTest {
                         .withHeader(CONTENT_TYPE_HEADER_KEY, APPLICATION_JSON_CONTENT_TYPE_VALUE)
                         .withBody("""
                                 [1, 2, 3, 4, 5, 6, 82, 82, 83, 83, 86, 57, 10, 81, 53, 93, 50, 54, 31, 88, 15, 43, 79, 32, 43]
-                                          """.trim()
+                                """.trim()
                         )));
 
         // when
@@ -174,6 +178,21 @@ public class RandomNumberGeneratorRestTemplateErrorsIntegrationTest {
         // then
         assertThat(throwable).isInstanceOf(ResponseStatusException.class);
         assertThat(throwable.getMessage()).isEqualTo("500 INTERNAL_SERVER_ERROR");
+    }
+
+    @Test
+    void should_return_null_numbers_when_fault_empty_response() {
+        // given
+        wireMockServer.stubFor(WireMock.get("api/v1.0/random?min=1&max=99&count=25")
+                .willReturn(WireMock.aResponse()
+                        .withStatus(HttpStatus.OK.value())
+                        .withHeader(CONTENT_TYPE_HEADER_KEY, APPLICATION_JSON_CONTENT_TYPE_VALUE)
+                        .withFault(Fault.EMPTY_RESPONSE)));
+        // when
+        SixRandomNumbersDto response = randomNumberGenerable.generateSixRandomNumbers(25, 1, 99);
+
+        // then
+        assertThat(response).isEqualTo(new SixRandomNumbersDto(null));
     }
 
     @Test
