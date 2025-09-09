@@ -1,4 +1,4 @@
-package pl.lotto.infrastructure.numberannoucer.error;
+package pl.lotto.infrastructure.numberannoucer.controller.error;
 
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
@@ -14,5 +14,4 @@ public class ResultAnnouncerControllerErrorHandler {
         log.error(message);
         return new ResultAnnouncerErrorResponse(message, HttpStatus.NOT_FOUND);
     }
-
 }
