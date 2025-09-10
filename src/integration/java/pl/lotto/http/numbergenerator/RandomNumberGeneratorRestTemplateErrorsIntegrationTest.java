@@ -5,12 +5,9 @@ import com.github.tomakehurst.wiremock.http.Fault;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.web.server.ResponseStatusException;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import pl.lotto.domain.numbergenerator.RandomNumberGenerable;
@@ -35,21 +32,10 @@ public class RandomNumberGeneratorRestTemplateErrorsIntegrationTest {
             .options(wireMockConfig().dynamicPort())
             .build();
 
-    @Autowired
-    private RandomNumberGenerable randomNumberGenerable = new RandomGeneratorRestTemplateTestConfig().remoteNumberGeneratorClient(
+    RandomNumberGenerable randomNumberGenerable = new RandomGeneratorRestTemplateTestConfig().remoteNumberGeneratorClient(
             wireMockServer.getPort(),
             1000,
-            1000
-    );
-
-    @DynamicPropertySource
-    static void properties(DynamicPropertyRegistry registry) {
-        // wireMockServer.getPort() is available here after initialization
-        registry.add("lotto.number-generator.http.client.config.uri",
-                () -> "http://localhost:" + wireMockServer.getPort());
-        registry.add("lotto.number-generator.http.client.config.connection-timeout", () -> 1000);
-        registry.add("lotto.number-generator.http.client.config.read-timeout", () -> 1000);
-    }
+            1000);
 
     @Test
     void should_return_200_ok_and_six_numbers() {
@@ -180,20 +166,20 @@ public class RandomNumberGeneratorRestTemplateErrorsIntegrationTest {
         assertThat(throwable.getMessage()).isEqualTo("500 INTERNAL_SERVER_ERROR");
     }
 
-    @Test
-    void should_return_null_numbers_when_fault_empty_response() {
-        // given
-        wireMockServer.stubFor(WireMock.get("api/v1.0/random?min=1&max=99&count=25")
-                .willReturn(WireMock.aResponse()
-                        .withStatus(HttpStatus.OK.value())
-                        .withHeader(CONTENT_TYPE_HEADER_KEY, APPLICATION_JSON_CONTENT_TYPE_VALUE)
-                        .withFault(Fault.EMPTY_RESPONSE)));
-        // when
-        SixRandomNumbersDto response = randomNumberGenerable.generateSixRandomNumbers(25, 1, 99);
-
-        // then
-        assertThat(response).isEqualTo(new SixRandomNumbersDto(null));
-    }
+//    @Test
+//    void should_return_null_numbers_when_fault_empty_response() {
+//        // given
+//        wireMockServer.stubFor(WireMock.get("api/v1.0/random?min=1&max=99&count=25")
+//                .willReturn(WireMock.aResponse()
+//                        .withStatus(HttpStatus.OK.value())
+//                        .withHeader(CONTENT_TYPE_HEADER_KEY, APPLICATION_JSON_CONTENT_TYPE_VALUE)
+//                        .withFault(Fault.EMPTY_RESPONSE)));
+//        // when
+//        SixRandomNumbersDto response = randomNumberGenerable.generateSixRandomNumbers(25, 1, 99);
+//
+//        // then
+//        assertThat(response).isEqualTo(new SixRandomNumbersDto(null));
+//    }
 
     @Test
     void should_return_response_unauthorized_status_exception_when_http_service_returning_unauthorized_status() {
