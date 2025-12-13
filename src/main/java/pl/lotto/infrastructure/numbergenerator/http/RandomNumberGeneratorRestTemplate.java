@@ -99,6 +99,9 @@ public class RandomNumberGeneratorRestTemplate implements RandomNumberGenerable 
 
 
     private String getUrlForService(String service) {
-        return uri + ":" + port + service;
+        return UriComponentsBuilder.fromHttpUrl(uri)
+                .port(port)
+                .path(service)
+                .toUriString();
     }
 }
