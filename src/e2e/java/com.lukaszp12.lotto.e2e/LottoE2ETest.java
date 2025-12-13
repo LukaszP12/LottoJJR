@@ -15,6 +15,7 @@ import pl.lotto.LottoSpringBootApplication;
 import java.util.List;
 
 import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.greaterThan;
 
 
 @Testcontainers
@@ -49,5 +50,25 @@ class LottoE2ETest {
                 .then()
                 .log().ifValidationFails()
                 .statusCode(200);
+    }
+
+    @Test
+    void shouldPersistTicketBetweenRequests(){
+        given()
+                .port(port)
+                .contentType(ContentType.JSON)
+                .body(List.of(1, 2, 3, 4, 5, 6))
+                .when()
+                .post("/lotto/play")
+                .then()
+                .statusCode(200);
+
+        given()
+                .port(port)
+                .when()
+                .get("/lotto/tickets")
+                .then()
+                .statusCode(200)
+                .body("size()", greaterThan(0));
     }
 }
